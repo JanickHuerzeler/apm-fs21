@@ -27,3 +27,6 @@ target/
 
 # Michael's stuff
 apm-fs21.iml
+
+# MacOS stuff
+.DS_Store
