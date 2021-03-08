@@ -30,3 +30,6 @@ apm-fs21.iml
 
 # MacOS stuff
 .DS_Store
+# IntelliJ
+*.iml
+.idea
