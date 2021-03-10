@@ -6,6 +6,31 @@ services:
     deploy:
       replicas: 2
   load-balancer:
-    build: load-balancer
+    build:
+      context: load-balancer
+      args:
+        role: master
+    #ports:
+    #  - 8080:8080
+    cap_add:
+      - NET_ADMIN
+  load-balancer-2:
+    build:
+      context: load-balancer
+      args:
+        role: backup
+    #ports:
+    #  - 8081:8081
+    cap_add:
+      - NET_ADMIN
+  reverse-proxy:
+    build:
+      context: reverse-proxy
     ports:
       - 8080:8080
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.19.0.0/16
+          gateway: 172.19.0.1
