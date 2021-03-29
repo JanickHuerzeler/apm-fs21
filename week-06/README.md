@@ -172,11 +172,11 @@ Round-Robin-Manier an jene Pods weiterleitet, welche durch den `selector`
 definiert sind. In diesem Fall sind das alle Pods mit dem Label `app: apm-app`,
 was auf die im Deployment definierten Pods zutrifft.
 
-Jetzt sollten Sie die App unter [localhost:8080](http://localhost:8080) 
-erreichen. Beachten Sie den angezeigten Hostnamen. Wenn Sie die Seite 
-wiederholt neu laden, sollten Sie irgendwann auch mal auf dem zweiten Server 
-landen. Halten Sie die Reload-Taste (z. B. F5) gedrückt, um das Ganze zu 
-beschleunigen.
+Nach einem erneuten `kubectl apply -f apm-app.yaml` sollten Sie die App unter
+[localhost:8080](http://localhost:8080) erreichen können. Beachten Sie den 
+angezeigten Hostnamen. Wenn Sie die Seite wiederholt neu laden, sollten Sie
+irgendwann auch mal auf dem zweiten Server landen. Halten Sie die Reload-Taste
+(z. B. F5) gedrückt, um das Ganze zu beschleunigen.
 
 
 ### 4. Autoscaling
@@ -188,7 +188,7 @@ Dieser Autoscaler holt sich regelmässig Performance-Metriken der laufenden
 Pods und entscheidet aufgrund einer konfigurierten Policy, ob zusätzliche 
 Pods nötig sind oder ob Pods entfernt werden können. Die Details zum 
 Algorithmus finden Sie in der
-[Dokumentation](https://kubernetes.io/de/docs/tasks/run-application/horizontal-pod-autoscale/#details-zum-algorithmus).
+[Dokumentation](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#algorithm-details).
 
 Die Performance-Metriken werden in Kubernetes von einem "Metrics Server" zur 
 Verfügung gestellt. In gewissen Kubernetes-Umgebungen ist dieser Server 
@@ -199,3 +199,102 @@ Sie diese schon gepullt haben, können Sie sie mit folgendem Befehl deployen:
 
     kubectl apply -f metrics-server.yaml
 
+Alternativ können Sie auch die URL der Datei auf GitHub angeben:
+
+    kubectl apply -f https://raw.githubusercontent.com/apm-fhnw/apm-fs21/main/week-06/metrics-server.yaml
+
+Jetzt können Sie den Autoscaler konfigurieren. Fügen Sie folgenden Text zu 
+Ihrer Kubernetes-YAML-Datei hinzu:
+
+    ---
+    apiVersion: autoscaling/v2beta2
+    kind: HorizontalPodAutoscaler
+    metadata:
+      name: apm-app
+    spec:
+      scaleTargetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: apm-app
+      minReplicas: 1
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 60
+
+Damit definieren Sie, dass Sie die Anzahl Replicas (Pods) im Deployment 
+'apm-app' automatisch bestimmen möchten, und zwar zwischen zwischen 1 und 10.
+Die Metrik, die verwendet wird, ist die CPU-Utilization und der gewünschte 
+Wert beträgt 60%. Falls der Wert der vorhandenen Pods deutlich darüber oder 
+darunter liegt, werden Pods hinzugefügt oder entfernt.
+
+Das Verhalten des Autoscalers kann mittels verschiedener Optionen ge-finetune-t
+werden. Als Erstes sollten Sie die Zeile `replicas: 2` aus der 
+Deployement-Konfiguration entfernen; diese ist jetzt nicht mehr nötig. Als 
+Zweites können Sie den Ressourcen-Verbrauch der Pods konfigurieren, indem 
+Sie den `containers`-Teil folgendermassen erweitern:
+
+    containers:
+      - name: apm-app
+        image: apm-app_web-app
+        imagePullPolicy: Never
+        resources:
+          requests:
+            cpu: '1'
+          limits:
+            cpu: '1'
+
+Die neuen Optionen bedeuten, dass jeder Pod mindestens 1 ganze CPU benötigt 
+(bzw. anfordert: `requests`) und dass er auch nicht mehr als eine CPU 
+verwenden darf (`limits`). Den Prozent-Wert, den Sie beim Autoscaler 
+angegeben haben, bezieht sich auf den `requests`-Wert hier.
+
+Den Autoscaler selber können Sie ebenfalls weiter konfigurieren, z. B. indem 
+Sie angeben, wie lange er mit dem Hinzufügen oder Entfernen von weiteren Pods 
+warten soll, nachdem ein neuer Pod gestartet wurde (*Cooldown*). Dies wird mit 
+folgenden Optionen gesteuert:
+
+    behavior:
+      scaleUp:
+        stabilizationWindowSeconds: 60
+      scaleDown:
+        stabilizationWindowSeconds: 60
+
+(Das `behavior`-Element befindet sich auf der gleichen Stufe wie `metrics`). 
+Werfen Sie einen Blick in die
+[Dokumentation](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-configurable-scaling-behavior)
+für weitere Konfigurations-Möglichkeiten.
+
+
+### 5. Autoscaling-Verhalten analysieren
+
+Wenn Sie diese neue Konfiguration "anwenden" (`apply`), sollte das 
+Deployment mit 1 Pod starten. Mit folgendem Befehl können Sie sehen, wie 
+stark die App zurzeit ausgelastet ist, bzw. wie nahe am Zielwert von 60% sie 
+sich befindet:
+
+    kubectl get hpa
+
+Falls Sie auf einem Unix-System arbeiten, können Sie diese Informationen auch 
+"beaobachten", indem Sie den `watch`-Befehl verwenden, der die Ausgabe alle 
+zwei Sekunden aktualisiert. Allerdings aktualisieren sich die Werte des 
+Autoscalers deutlich seltener.
+
+    watch kubectl get hpa
+
+Als letzten Schritt sollen Sie JMeter verwenden, um die Applikation zu 
+"belasten" und das Scale-out auszulösen. Beginnen Sie langsam, indem Sie 
+erst mal ein paar duzend Users auf die App loslassen, und beobachten Sie die 
+von `kubectl` gemeldete Auslastung. Erhöhen Sie danach die Anzahl Benutzer 
+und beobachten Sie, wie das System und die gemessenen Antwortzeiten reagieren.
+
+Ändern Sie auch mal die Autoscaling-Parameter oder die Ressourcen, die 
+einzelnen Pods zur Verfügung stehen (z.B. `cpu: '0.2`). Was passiert, wenn der 
+Wert für `stabilizationWindowSeconds` sehr klein ist? Und wenn er sehr gross 
+ist? Denken Sie daran, dass ein guter Wert davon abhängig ist, wie schnell ein 
+neuer Pod bereit steht, was wiederum davon abhängig ist, wie viel 
+Rechenleistung zur Verfügung steht. Finden Sie zufriedenstellende Werte?
