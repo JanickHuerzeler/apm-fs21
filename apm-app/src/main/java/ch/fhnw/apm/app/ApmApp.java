@@ -1,5 +1,6 @@
 package ch.fhnw.apm.app;
 
+import ch.fhnw.apm.app.storage.CachedStorage;
 import ch.fhnw.apm.app.storage.ClusterStorage;
 import ch.fhnw.apm.app.storage.Storage;
 import org.springframework.boot.SpringApplication;
@@ -15,6 +16,7 @@ public class ApmApp {
 
     @Bean
     Storage storage() {
-        return new ClusterStorage("shared-key-value-store");
+        Storage originalStorage = new ClusterStorage("shared-key-value-store");
+        return new CachedStorage(100, originalStorage);
     }
 }

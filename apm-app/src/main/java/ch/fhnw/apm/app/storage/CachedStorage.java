@@ -1,8 +1,8 @@
 package ch.fhnw.apm.app.storage;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CachedStorage implements Storage {
     private final Map<Integer, String> cacheStorage;
@@ -12,7 +12,7 @@ public class CachedStorage implements Storage {
     public CachedStorage(int cacheSize, Storage storageToBeCached) {
         this.cacheSize = cacheSize;
         this.storageToBeCached = storageToBeCached;
-        this.cacheStorage = new HashMap<Integer, String>();
+        this.cacheStorage = new ConcurrentHashMap<>();
     }
 
     private String valueFromCache(int id) {
