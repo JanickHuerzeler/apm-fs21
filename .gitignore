@@ -1,3 +1,19 @@
+**/target/
+**/.classpath
+**/*.project
+**/.settings
+**/*.springBeans
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
 # Compiled class file
 *.class
 
@@ -25,9 +41,11 @@ hs_err_pid*
 # Maven
 target/
 
-# IntelliJ
-*.iml
-.idea
+# Michael's stuff
+apm-fs21.iml
 
 # MacOS stuff
 .DS_Store
+# IntelliJ
+*.iml
+.idea
