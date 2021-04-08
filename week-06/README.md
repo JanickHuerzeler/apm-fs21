@@ -293,7 +293,7 @@ von `kubectl` gemeldete Auslastung. Erhöhen Sie danach die Anzahl Benutzer
 und beobachten Sie, wie das System und die gemessenen Antwortzeiten reagieren.
 
 Ändern Sie auch mal die Autoscaling-Parameter oder die Ressourcen, die 
-einzelnen Pods zur Verfügung stehen (z.B. `cpu: '0.2`). Was passiert, wenn der 
+einzelnen Pods zur Verfügung stehen (z.B. `cpu: '0.2'`). Was passiert, wenn der 
 Wert für `stabilizationWindowSeconds` sehr klein ist? Und wenn er sehr gross 
 ist? Denken Sie daran, dass ein guter Wert davon abhängig ist, wie schnell ein 
 neuer Pod bereit steht, was wiederum davon abhängig ist, wie viel 
