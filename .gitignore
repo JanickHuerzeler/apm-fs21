@@ -33,3 +33,6 @@ apm-fs21.iml
 # IntelliJ
 *.iml
 .idea
+
+# Unneeded files generated on macs
+.DS_Store
