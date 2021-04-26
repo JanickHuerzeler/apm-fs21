@@ -1,0 +1,201 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <title>High Performance Java - Activity 08.01 - Tuning the Garbage Collector for Maximum Throughput</title>
+<script language="javascript">
+    function OpenHowTo(url)
+    {
+      window.open(url, "HowTo", "height=500, width=500, resizable=yes, scrollbars=yes, toolbar=no, status=no, menubar=no, top=300, left=300");
+    }
+    function OpenSample(url)
+    {
+      window.open(url, "Sample", "height=400, width=400, resizable=yes, scrollbars=yes, toolbar=no, status=no, menubar=no, top=150, left=150");
+    }
+  </script>
+<link rel="stylesheet" type="text/css" href="../../../styles/dm.css">
+</head>
+<body>
+
+<h1>
+Tuning the Garbage Collector for Maximum Throughput</h1>
+
+<hr>
+<h3>
+Goals</h3>
+
+<blockquote>
+<li>
+Profile the garbage collector and tune it in order to reduce the time spent
+with garbage collection.</li>
+</blockquote>
+
+<hr>
+<h3>
+Overview</h3>
+
+<blockquote>In this lab you are asked to analyze an application's garbage
+collector using the tools GCViewer, VisualGC, and the GC trace output,
+if necessary.&nbsp; You have the opportunity to tune the garbage collector
+and check the results of your tuning attempts.&nbsp; The goal is to increase
+the application’s throughput.</blockquote>
+
+<hr>
+<h3>
+Work Directory</h3>
+
+<blockquote><tt><font color="#000066">GCTuning</font></tt></blockquote>
+
+<hr>
+<ul>
+<h3>
+What is the point of this activity?</h3>
+In this lab you are asked to analyze an application's garbage collector
+using the tools GCViewer, VisualGC, and the GC trace output, if necessary.&nbsp;
+You have the opportunity to tune the garbage collector and check the results
+of your tuning attempts.&nbsp; The goal is to increase the application’s
+throughput.
+<p>The program used for this activity is a synthetic program that periodically
+allocates chunks of memory from the heap and releases them again.&nbsp;
+It runs for two minutes with a steady allocation rate.&nbsp; On platforms
+with a slow CPU it might run longer, especially in its original form before
+you started tuning the garbage collector.
+<p>This activity gives you an opportunity to try out some of the GC options
+that have been mentioned during the lecture. In principle, you are free
+to experiment with as many tuning options as you wish.&nbsp; In practice,
+however, it is advisable that you don't experiment thoughtlessly.&nbsp;
+For GC tuning it is essential that you stick to a strategy and modify the
+JVM settings systematically rather than erratically twisting and tweaking
+options here and there.
+<p>Follow the instructions.&nbsp; Use the table below to keep track of
+the different tuning approaches and their respective results.
+<p><img SRC="Images/table.jpg" NOSAVE height=170 width=499>
+<br>A template of this table is available as an Excel file in the skeleton
+directory`s subdirectory <tt><font color="#000099">data</font></tt>.
+<p>You can retrieve the figures needed for filling in the table from GCViewer
+(throughput, pause times) and VisualGC (number of GCs, size of eden, survivor
+spaces, old generation, full gc). “E”, “S” and “O” stand for
+“Eden”, “Survivors” and “Old Generation”. A look into the trace
+output file (usually named gc.log.txt) provides the information whether
+a full GC happened or not.&nbsp; Look for the string “Full GC”.
+<p>What follows is a step-by-step description of the preparations for the
+actual analysis and tuning.&nbsp; If you need the JVM GC options you can
+find an overview of the options in <font face="Arial,Helvetica"><font size=-1><a href="../Resources/GCViewer-VMflags.html" target="_blank">JVM
+options</a>.</font> </font>[<i>Note, this list of&nbsp; JVM options might
+be useful as a reference later in your project, since information regarding
+JVM-specific options is notoriously hard to find</i>.]
+<h3>
+Step 1: Compilation</h3>
+The work directory for this lab is <tt><font color="#000066">GCTuning</font></tt>.
+Its subdirectory <tt><font color="#000066">src</font></tt> contains the
+source code for this activity. If you use Eclipse, create a new project
+for this activity and import the <tt>test</tt> package. 
+<p>Compile the Java source in the <tt><font color="#000066">src</font></tt>
+directory.
+<h3>
+Step 2: Generate GC output</h3>
+Run the <tt>Test </tt>program in order to generate GC output. For the purpose
+generating GC output you must specify the JVM options <tt>-verbose:GC </tt>and<tt>
+-XX:+PrintGCDetails</tt>.&nbsp; In order to capture the GC output in a
+file, use the <tt>-Xloggc:&lt;filename></tt> option.
+<p>The program invocation could look like this:
+<br>&nbsp;
+<ol><tt>>java -verbose:gc -XX:+PrintGCDetails -Xloggc:gc.log.txt test.Test</tt>
+<br><tt></tt>&nbsp;</ol>
+If you use an IDE, provide the necessary option to the JVM and the program.
+In Eclipse, create two run profiles (menu <font face="Arial Narrow">Run
+=> Run...</font>), specify the main class <tt>test.Test</tt> and provide
+the
+<tt>-verbose:gc -XX:+PrintGCDetails -Xloggc:&lt;filename> </tt>JVM
+options (tab <font face="Arial,Helvetica"><font size=-1>Arguments</font></font>
+=> <font face="Arial,Helvetica"><font size=-1>VM arguments</font></font>).
+<h3>
+Step 3: Start GCViewer</h3>
+Find out the GCViewer installation directory and invoke GCViewer. This
+can be done like this:
+<blockquote><tt>>java -jar &lt;GCViewer_installation_directory>\gcviewer-&lt;version>.jar</tt></blockquote>
+In GCViewer, load the GC output file, e.g. <tt><font color="#000066">gc.log.txt</font></tt>.
+<h3>
+Step 4: Start VisualGC</h3>
+First, start the <tt>Test</tt> program.&nbsp; Then, retrieve its vmid,
+i.e., open a console window and type in:
+<br>&nbsp;
+<ul><tt>>jps</tt></ul>
+
+<p><br>The <tt>jps</tt> tool is part of the JDK and emits the vmids of
+all local JVMs.&nbsp; If it does not emit anything, although the <tt>Test</tt>
+program is running, read the trouble shooting section of the VisualGC installation
+instructions.
+<p>Once you have retrieved the Test program’s vmid, use it for invocation
+of the VisualGC tool:
+<br>&nbsp;
+<ul><tt>>visualgc &lt;vmid></tt></ul>
+
+<p><br>The tool’s invocation script is located in its installation directory,
+e.g. at <tt>C:\ProgramFiles\jvmstat\bat\visualgc.cmd</tt>.
+<br>&nbsp;
+<h3>
+Step 5: Analyse and Tune</h3>
+</ul>
+
+<ul>
+<ul>
+<li>
+<b>No options.</b></li>
+
+<br>Start without any tuning options to get a base line. Enter the results
+in the above mentioned table. Take a look at the results.
+<br>In previous tests on other platforms, the program used around 14 MB
+for young and old generation together. How much memory does the program
+use on your platform?
+<br>&nbsp;
+<li>
+<b><tt>-Xms32m -Xmx32m</tt></b></li>
+
+<br>Since heap size is important, increase the heap.&nbsp; Use32 MB. How
+are the results now regarding throughput, pause time, etc.? How is the
+heap divided into young and old generation?
+<br>&nbsp;</ul>
+
+<ul>
+<li>
+<b><tt>-Xms32m –Xmx32m -XX:NewRatio=&lt;ratio></tt></b></li>
+
+<br>Remember that throughput might benefit from a larger young generation.
+<br>Use the –XX:NewRatio=&lt;ratio> option to increase the young generation,
+while keeping the total heap size fixed at 32MB.&nbsp; Remember ‘young:old
+= 1:ratio’, i.e., smaller values increase the young generation. You might
+even want to try a ratio of 1, which splits the heap equally between young
+and old generation.&nbsp; Don’t forget to record the results in the table.
+<br>&nbsp;
+<li>
+–<b><tt>Xms32m –Xmx32m –XX:NewRatio=&lt;ratio> –XX:SurvivorRatio=&lt;ratio></tt></b></li>
+
+<br>Take a look at the young generation. How large are eden and the survivor
+spaces? Use the NewRatio that provided the best results in the previous
+test and increase the survivor spaces by using <tt>–XX:SurvivorRatio=&lt;ratio></tt>.&nbsp;
+Which SurvivorRatio yields the best results?
+<br>&nbsp;
+<li>
+–<b><tt>Xms64m –Xmx64m –XX:NewRatio=&lt;ratio> –XX:SurvivorRatio=&lt;ratio></tt></b></li>
+
+<br>Since heap size is important, let’s double it. Use <tt>–Xms64m
+–Xmx64m</tt> with the ratios for young generation and survivor spaces
+that provided the best results with 32 MB. Successively drop the ratios
+(first SurvivorRatio, then NewRatio).&nbsp; How do these values compare
+to the 32 MB values? How does the tuned 32MB version compare to the non-tuned
+64MB version?
+<br>&nbsp;
+<li>
+<b>The big picture.</b></li>
+
+<br>Take a step back and look at the entire table. Which tunings are important
+and helpful? Which did only provide minor improvements? If the test program
+were your product, which setting would you recommend for your customers?</ul>
+</ul>
+
+<hr WIDTH="100%">
+</body>
+</html>

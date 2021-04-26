@@ -1,0 +1,191 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <title>High Performance Java - Activity 08.02 - Tuning the Garbage Collector for Minimum Pause Times</title>
+<script language="javascript">
+    function OpenHowTo(url)
+    {
+      window.open(url, "HowTo", "height=500, width=500, resizable=yes, scrollbars=yes, toolbar=no, status=no, menubar=no, top=300, left=300");
+    }
+    function OpenSample(url)
+    {
+      window.open(url, "Sample", "height=400, width=400, resizable=yes, scrollbars=yes, toolbar=no, status=no, menubar=no, top=150, left=150");
+    }
+  </script>
+<link rel="stylesheet" type="text/css" href="../../../styles/dm.css">
+</head>
+<body>
+
+<h1>
+Tuning the Garbage Collector for Minimum Pause Times</h1>
+
+<hr>
+<h3>
+Goals</h3>
+
+<blockquote>
+<li>
+Profile the garbage collector and tune it in order to reduce the pause
+times caused by the garbage collector.</li>
+</blockquote>
+
+<hr>
+<h3>
+Overview</h3>
+
+<blockquote>In this lab you are asked to analyze an application's garbage
+collector using the tools GCViewer, VisualGC, and the GC trace output,
+if necessary.&nbsp; You have the opportunity to tune the garbage collector
+and check the results of your tuning attempts.&nbsp; The goal is to reduce
+the duration of the application’s longest GC pause.</blockquote>
+
+<hr>
+<h3>
+Work Directory</h3>
+
+<blockquote><tt><font color="#000066">GCTuning</font></tt></blockquote>
+
+<hr WIDTH="100%">
+<h2>
+Reduce GC Pause Times</h2>
+
+<blockquote>In this lab you are asked to analyze an application's garbage
+collector using the tools GCViewer, VisualGC, and the GC trace output,
+if necessary.&nbsp; You have the opportunity to tune the garbage collector
+and check the results of your tuning attempts.&nbsp; The goal is to reduce
+the duration of the application’s longest GC pause.
+<p>The program used for this activity is the same synthetic program that
+you used in the previous activity.&nbsp; It periodically allocates chunks
+of memory from the heap and releases them again.&nbsp; It runs for two
+minutes with a steady allocation rate.&nbsp; On platforms with a slow CPU
+it might run longer, especially in its original form before you started
+tuning the garbage collector.
+<p>Follow the instructions.&nbsp; Use the same table as <a href=GCTuning-1.Throughput.html>before</a>
+to keep track of the different tuning approaches and their respective results.
+<p><img SRC="Images/table.jpg" NOSAVE height=170 width=499>
+<br>A template of this table is available as an Excel file in the skeleton
+directory`s subdirectory <tt><font color="#000099">data</font></tt>.
+<p>You can retrieve the figures needed for filling in the table from GCViewer
+(throughput, pause times) and VisualGC (number of GCs, size of eden, survivor
+spaces, old generation, full gc). “E”, “S” and “O” stand for
+“Eden”, “Survivors” and “Old Generation”. A look into the trace
+output file (usually named gc.log.txt) provides the information whether
+a full GC happened or not.&nbsp; Look for the string “<font face="Lucida Console"><font size=-1>Full
+GC</font></font>”, or for “<font face="Lucida Console"><font size=-1>(concurrent
+mode failure)</font></font>” if you use the CMS collector.</blockquote>
+
+<ul>
+<h3>
+Step 1: Execute the Program and Run the Tools</h3>
+Compile and run the application as before.&nbsp; Start the GCViewer and
+VisualGC tools as before.
+<p><b>Important Note:</b>
+<br>Running the tools during the test execution might lead to unnaturally
+long ‘longest pauses’, especially with weak or single core CPUs. If
+you observe any such effect on your test system, consider using two test
+runs: one to retrieve information from GCViewer and one without concurrent
+execution of the tools to retrieve the values from the trace output via
+VisualGC.
+<h3>
+Step 2: Analyse and Tune</h3>
+Let’s start with a recap of one of the tests for ‘maximum throughput’:
+With one configuration (64MB, NewRatio=1 and SurvivorRatio=2) we managed
+to avoid a full garbage collection for the complete run of the program
+and observed that it was the test run with the shortest ‘longest pause’.
+This is not surprising, since full collections typically take longer than
+minor collections; avoiding full collections results in short ‘longest
+pauses’.
+<p>The synthetic test program runs for only 2 minutes.&nbsp; What happens
+if we consider a server application that runs 7/24?
+<p>VisualGC shows us that out test program’s heap usage in the old generation
+steadily increases:
+<p><img SRC="Images/visualgc.jpg" NOSAVE height=113 width=445>
+<p>The diagram shows the entire execution time of 2 minutes; the green
+grid represents the old generation.&nbsp; If we had a server application,
+that ran 7/24, it would be only a matter of time until a full garbage collection
+would occur.&nbsp; Considering the increasing memory consumption, we can
+tell that there would be a full collection roughly every 20 minutes or
+less.
+<p>On the other hand the increase rate is low. We also know that the test
+program frees all its memory (at the latest after five minutes). Hence
+there is a good chance that using CMS (concurrent mark and sweep garbage
+collector) for the old generation would allow a 7/24-application to run
+with relatively short ‘longest pauses’.
+<h4>
+a) Use Concurrent-Mark-and-Sweep (CMS)</h4>
+In order to explore the effect of the CMS algorithm, start with a configuration
+that has a full collection and check whether CMS eliminates the full collection.
+<p>Use the options<tt> –Xms64m –Xmx64m –XX:NewRatio=1</tt> (under
+the assumption that it triggered a full collection) and <tt>-XX:+UseConcMarkSweepGC</tt>.
+<p>Note, with some systems the JVM ignores the <tt>NewRatio=1</tt>. Check
+with VisualGC if <tt>NewRatio=1</tt> works. If not, use <tt>–Xmn32m&nbsp;</tt>
+instead of <tt>–XX:NewRatio=1.</tt>
+<p>What is the result of this tuning? Can you avoid full collections with
+this configuration?
+<p>Note that with the CMS collector you cannot use VisualGC any more to
+determine if a full collection has occurred. The old generation collection
+counter in VisualGC shows the total of all CMS and full collections. You
+have to look into the trace output file and must check whether it contains
+‘Full GC’.
+<p>How do the values for ‘longest pause’ and ‘throughput’ compare
+to those that we got in the previous lab without CMS (but with the same
+heap size configuration of 64MB and NewRatio=1)?
+<h4>
+b) Reduce the longest pause time</h4>
+Minimum pause tuning for the test program is not as straight forward as
+throughput tuning. It depends heavily on the CPU power of your system.
+Here are a few guidelines:
+<p>Determine if the longest pause stems from a minor collection or a full
+garbage collection, which occurred because CMS could not handle the old
+generation by itself.
+<ul>
+<li>
+If the longest pause stems from a minor collection, consider decreasing
+the young generation size.</li>
+
+<br>The trick is to do this only to the extent that not too many objects
+are promoted to the old generation. Otherwise, CMS might fail to handle
+the old generation by itself and a full collection is triggered, which
+might cause a long pause.
+<br>&nbsp;</ul>
+
+<ul>
+<li>
+If the longest pause stems from a full collection, you can start CMS earlier,
+e.g. when the old generation is filled up by 50%.</li>
+
+<br>For this purpose, use the options <tt>-XX:CMSInitiatingOccupancyFraction=50
+-XX:+UseCMSInitiatingOccupancyOnly</tt>. This might help avoiding a full
+collection. You might even consider lower occupancy levels, i.e. 30%.
+<br>Another option to consider is the SurvivorRatio, e.g. increase the
+survivor spaces and decrease eden. This might help reducing the number
+of objects that are promoted to the old generation.</ul>
+
+<h4>
+c) Baseline without any tuning options</h4>
+Run a test without any tuning options (except CMS usage) as a baseline.
+Compare the results from this test to the results from test runs with tuning
+options.&nbsp; Compare them also to the results from the default test without
+CMS that you have done during throughput tuning. Does the heap configuration
+differ?
+<h4>
+d) Different heap sizes</h4>
+How important is memory? Try the tests with 32MB and maybe 48MB, too. Compare
+these results to the 64MB tests.
+<h4>
+e) The big picture</h4>
+As before, take a step back and compare all results. Which tunings are
+important, and which have only minor effect? What about the default configurations?&nbsp;&nbsp;
+How do they compare to your tuning efforts?
+<p>How do the tunings for throughput and minimum pause differ? How do the
+corresponding results differ?
+<p>How was the throughput, when you tuned for minimum pause times and the
+minimum pause times when you tuned for throughput?&nbsp; What is a good
+compromise?</ul>
+
+<hr WIDTH="100%">
+</body>
+</html>

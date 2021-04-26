@@ -1,0 +1,716 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <meta name="Author" content="Hendrik Schreiber (hs at tagtraum.com)">
+   <meta name="Keywords" content="Hendrik Schreiber java http webserver server jo! servlet EJB JSP sixbs beans serialization XML GCViewer garbage collection consulting">
+   <meta name="Description" content="tagtraum industries incorporated ~ IT Consulting Services">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="KeyWords" content="Hendrik Schreiber java http webserver server jo! servlet EJB JSP sixbs beans serialization XML GCViewer garbage collection consulting">
+   <title>GCViewer VMFlags</title>
+<!-- ZoneLabs Privacy Insertion -->
+<script language='javascript' src='http://127.0.0.1:1028/js.cgi?pcaw&r=17673'></script>
+<link title="tagtraum-style" type="text/css" href="css/tagtraum.css" rel="StyleSheet">
+</head>
+<body>
+&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td></td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td VALIGN=TOP WIDTH="100%" style="border-bottom: 1px solid #777777; border-top: 1px solid #777777; border-left: 1px solid #777777; border-right: 1px solid #777777;" class="body-text">
+<h1>
+VMFlags</h1>
+When it comes to garbage collector and memory flags VMs from different
+vendors differ somewhat. Most flags aren't even properly documented by
+the usage printout of the VM themselves. This page tries to shine some
+light on what garbage collection related flags there are and what they
+are good for. Further information can be found at <a href="http://blogs.sun.com/watt/resource/jvm-options-list.html">Joe
+Mocker's Collection of JVM Options</a>&nbsp; and <a href="http://java.sun.com/javase/technologies/hotspot/vmoptions.jsp">Some
+Useful Java HotSpot VM Options</a>.
+<h2>
+<a NAME="sun"></a>Sun JVMs</h2>
+Disclaimer: Please note that the data presented in this document has been
+gathered from several publicly available sources. It is a conscious selection
+of available VM parameters and even though we tried to check most of the
+facts presented this document may contain errors.
+<h3>
+Choosing a VM</h3>
+
+<dl>
+<dt>
+<a NAME="sun.server"></a><b><font color="#3333FF">-server</font></b></dt>
+
+<dd>
+Instructs the VM to use the server HotSpot VM. This also implies that default
+heap sizes and permanent generation sizes are different.&nbsp;</dd>
+
+<dl>Under 1.5 this option is the default option, if the machine is a <a href="#sun.serverclass">server-class
+machine</a>.&nbsp;
+<br>Supported by: 1.3, 1.4, 1.5, 6.0&nbsp;</dl>
+
+<dt>
+<a NAME="sun.client"></a><b><font color="#3333FF">-client</font></b></dt>
+
+<dd>
+Instructs the VM to use the client HotSpot VM. This also implies that default
+heap sizes and permanent generation sizes are different.&nbsp;</dd>
+
+<dl>Supported by: 1.3, 1.4, 1.5, 6.0&nbsp;</dl>
+</dl>
+
+<h3>
+Printing Information about GC</h3>
+
+<dl>
+<dt>
+<a NAME="sun.verbose"></a><b><font color="#3333FF">-verbose:gc</font></b></dt>
+
+<dd>
+Prints out information about garbage collections to standard out. To print
+the same information to a file, use <tt><a href="#sun.loggc">-Xloggc:&lt;file></a></tt>&nbsp;</dd>
+
+<dl>Example:
+<br><tt>[GC 325407K->83000K(776768K), 0.2300771 secs]</tt>
+<br><tt>[GC 325816K->83372K(776768K), 0.2454258 secs]</tt>
+<br><tt>[Full GC 267628K->83769K(776768K), 1.8479984 secs]</tt>
+<br>See <tt><a href="#sun.loggc">-Xloggc</a></tt>
+<br>Supported by: 1.3, 1.4, 1.5, 6.0&nbsp;</dl>
+<b><font color="#3333FF">-XX:+PrintGC</font></b>
+<dl>Supported by: 1.3.1, 1.4, 1.5, 6.0&nbsp;</dl>
+
+<dt>
+<a NAME="sun.loggc"></a><b><font color="#3333FF">-Xloggc:&lt;file></font></b></dt>
+
+<dd>
+Prints information about garbage collections to the specified file.&nbsp;</dd>
+
+<dl>In conjunction with <tt><a href="#sun.PrintGCDetails">-Xloggc</a></tt>
+this is the best setting for the free GCViewer.&nbsp;
+<br>Supported by: 1.4, 1.5, 6.0&nbsp;</dl>
+
+<dt>
+<a NAME="sun.PrintGCDetails"></a><b><font color="#3333FF">-XX:+PrintGCDetails</font></b></dt>
+
+<dd>
+Instructs the VM to be more verbose when printing out garbage collecion
+data. Specifically it does not only tell you that there was a collection,
+but also what impact it had on the different generations.&nbsp;</dd>
+
+<dl>This flag is very useful when tuning generation sizes.&nbsp;
+<br>In conjunction with <tt><a href="#sun.loggc">-Xloggc</a></tt> this
+is the best setting for the free GCViewer.&nbsp;
+<br>Example:&nbsp;
+<br><tt>2.459: [GC 2.459: [DefNew: 3967K->0K(4032K), 0.0141600 secs] 8559K->7454K(16320K),
+0.0143588 secs]</tt>
+<br>Supported by: 1.4, 1.5, 6.0&nbsp;</dl>
+
+<dt>
+<a NAME="sun.PrintGCTimeStamps"></a><b><font color="#3333FF">-XX:+PrintGCTimeStamps</font></b></dt>
+
+<dd>
+Ensures that timestamps relative to the start of the application are printed
+in the GC log.&nbsp;</dd>
+
+<dl>Supported by: 1.4, 1.5, 6.0&nbsp;</dl>
+
+<dt>
+<a NAME="sun.PrintTenuringDistribution"></a><b><font color="#3333FF">-XX:+PrintTenuringDistribution</font></b></dt>
+
+<dd>
+Prints details about the tenuring distribution to standard out. It can
+be used to show this threshold and the ages of objects in the new generation.
+It is also useful for observing the lifetime distribution of an application.&nbsp;</dd>
+
+<dl>Example:&nbsp;
+<br><tt>5.350: [GC Desired survivor size 32768 bytes, new threshold 1 (max
+31)</tt>
+<br><tt>- age 1: 57984 bytes, 57984 total</tt>
+<br><tt>- age 2: 7552 bytes, 65536 total</tt>
+<br><tt>756K->455K(1984K), 0.0097436 secs]</tt>
+<br>Supported by: 1.3, 1.4, 1.5, 6.0&nbsp;</dl>
+<b><font color="#3333FF">-XX:+ParallelGCVerbose</font></b>
+<dl>Supported by: 1.4, 1.5, 6.0&nbsp;</dl>
+<b><font color="#3333FF">-XX:+PrintCMSInitiationStatistics</font></b>
+<dl>Supported by: 6.0&nbsp;</dl>
+<b><font color="#3333FF">-XX:PrintCMSStatistics=&lt;value></font></b>
+<dl>Print statistics about the concurrent collections. For example, the
+number of times the concurrent collection yield to a young generation collection
+and the number of cards precleaned
+<br>Supported by: 1.4, 1.5, 6.0</dl>
+<b><font color="#3333FF">-XX:+PrintGCApplicationConcurrentTime</font></b>
+<dl>Measure the amount of time the applications runs between collection
+pauses.
+<br>Supported by: 1.4.2, 1.5, 6.0</dl>
+<b><font color="#3333FF">-XX:+PrintGCApplicationStoppedTime</font></b>
+<dl>Measure the length of the collection pauses.
+<br>Supported by: 1.4.2, 1.5, 6.0</dl>
+<b><font color="#3333FF">-XX:+PrintTLAB&nbsp;</font></b>
+<dl>Trace all the operations on TLAB's (Thread Allocation Buffers).
+<br>Supported by: 1.4.1, 1.5, 6.0</dl>
+</dl>
+
+<h3>
+Sizing Heap and Generations</h3>
+
+<dl>
+<dt>
+<a NAME="sun.mx"></a><b><font color="#3333FF">-Xmx&lt;value></font></b></dt>
+
+<dd>
+Overall maximum heap size. You may use <tt>k</tt>, <tt>m</tt> and <tt>g</tt>
+for kilobyte, megabyte and gigabyte.&nbsp;</dd>
+
+<dl>Example:&nbsp;
+<br><tt>-Xmx256m&nbsp;</tt>
+<br>sets the maximum heap size to<tt> 256mb</tt>
+<br>Supported by: 1.3, 1.4, 1.5, 6.0</dl>
+<a NAME="sun.ms"></a><b><font color="#3333FF">-Xms&lt;value></font></b>
+<dd>
+Minimum heap size. You may use <tt>k</tt>, <tt>m</tt> and <tt>g</tt> for
+kilobyte, megabyte and gigabyte.&nbsp;</dd>
+
+<dl>Example:&nbsp;
+<br><tt>-Xms256m&nbsp;</tt>
+<br>sets the minimum heap size to <tt>256mb</tt>
+<br>Supported by: 1.3, 1.4, 1.5, 6.0&nbsp;</dl>
+
+<dt>
+<a NAME="sun.mn"></a><b><font color="#3333FF">-Xmn&lt;value></font></b></dt>
+
+<dd>
+Sets the size of the young generation. You may use <tt>k</tt>, <tt>m</tt>
+and <tt>g</tt> for kilobyte, megabyte and gigabyte.&nbsp;</dd>
+
+<dl>Example:&nbsp;
+<br><tt>-Xmn64m&nbsp;</tt>
+<br>sets the young generation size to <tt>64mb</tt>
+<br>Supported by: 1.4, 1.5, 6.0</dl>
+
+<dt>
+<a NAME="sun.MinHeapFreeRatio"></a><b><font color="#3333FF">-XX:MinHeapFreeRatio=&lt;minimumInPercent></font></b></dt>
+
+<dd>
+Sets the minimal percentage of free heap memory that has to be available
+after a collection. This parameter can be used to influence when the VM
+is going to request more memory.</dd>
+
+<dl>Example:&nbsp;
+<br><tt>-XX:MinHeapFreeRatio=70</tt>
+<br>See <tt><a href="#sun.MaxHeapFreeRatio">-XX:MaxHeapFreeRatio</a></tt>
+<br>Supported by: 1.3, 1.4, 1.5, 6.0</dl>
+
+<dt>
+<a NAME="sun.MaxHeapFreeRatio"></a><b><font color="#3333FF">-XX:MaxHeapFreeRatio=&lt;maximumInPercent></font></b></dt>
+
+<dd>
+Sets the maximal percentage of free heap memory that must at most be available
+after a collection. This parameter can be used to influence when the VM
+is going to lower its footprint. In other words it can shrink the heap
+and therefore memory consumption.</dd>
+
+<dl>Example:&nbsp;
+<br>-<tt>XX:MaxHeapFreeRatio=20</tt>
+<br>See <tt><a href="#sun.MinHeapFreeRatio">-XX:MinHeapFreeRatio</a></tt>
+<br>Supported by: 1.3, 1.4, 1.5, 6.0</dl>
+
+<dt>
+<a NAME="sun.NewRatio"></a><b><font color="#3333FF">-XX:NewRatio=&lt;ratio></font></b></dt>
+
+<dd>
+Sets the ratio between young and old generation.&nbsp;</dd>
+
+<dl>Example:&nbsp;
+<br><tt>-XX:NewRatio=3</tt>
+<br>means that the ratio between the young and old generation is 1:3; in
+other words, the combined size of eden and the survivor spaces will be
+one fourth of the heap.
+<br>See <tt><a href="#sun.NewSize">-XX:NewSize</a></tt> and <tt><a href="#sun.MaxNewSize">-XX:MaxNewSize</a></tt>
+<br>Supported by: 1.3, 1.4, 1.5, 6.0</dl>
+
+<dt>
+<a NAME="sun.NewSize"></a><b><font color="#3333FF">-XX:NewSize=&lt;value></font></b></dt>
+
+<dd>
+Sets minimum size of the young generation.&nbsp;</dd>
+
+<dl>Example:&nbsp;
+<br><tt>-XX:NewSize=64m&nbsp;</tt>
+<br>sets the minimum size of the young generation to 64mb
+<br>See <tt><a href="#sun.NewRatio">-XX:NewRatio</a></tt> and <tt><a href="#sun.MaxNewSize">-XX:MaxNewSize</a></tt>
+<br>Supported by: 1.3, 1.4, 1.5, 6.0</dl>
+
+<dt>
+<a NAME="sun.MaxNewSize"></a><b><font color="#3333FF">-XX:MaxNewSize=&lt;value></font></b></dt>
+
+<dd>
+Sets maximum size of the young generation.&nbsp;</dd>
+
+<dl>Example:&nbsp;
+<br>-XX:NewSize=64m&nbsp;
+<br>sets the maximum size of the young generation to 64mb
+<br>See <tt><a href="#sun.NewRatio">-XX:NewRatio</a></tt> and <tt><a href="#sun.NewSize">-XX:NewSize</a></tt>
+<br>Supported by: 1.3, 1.4, 1.5, 6.0</dl>
+
+<dt>
+<a NAME="sun.SurvivorRatio"></a><b><font color="#3333FF">-XX:SurvivorRatio=&lt;ratio></font></b></dt>
+
+<dd>
+Sets size of the survivor spaces in relation to eden.&nbsp;</dd>
+
+<dl>Example:&nbsp;
+<br><tt>-XX:SurvivorRatio=6</tt>
+<br>sets the ratio between each survivor space and eden to be 1:6; in other
+words, each survivor space will be one eighth of the young generation (not
+one seventh, because there are two survivor spaces).
+<br>Supported by: 1.3, 1.4, 1.5, 6.0</dl>
+
+<dt>
+<a NAME="sun.PermSize"></a><b><font color="#3333FF">-XX:PermSize=&lt;value></font></b></dt>
+
+<dd>
+Sets the initial size of the permanent generation (where classes etc. are
+stored). This can be useful for application servers using many EJBs and
+JSPs.&nbsp;</dd>
+
+<dl>Example:&nbsp;
+<br><tt>-XX:PermSize=64m</tt>
+<br>See <tt><a href="#sun.MaxPermSize">-XX:MaxPermSize</a></tt>
+<br>Supported by: 1.3, 1.4, 1.5, 6.0</dl>
+
+<dt>
+<a NAME="sun.MaxPermSize"></a><b><font color="#3333FF">-XX:MaxPermSize=&lt;value></font></b></dt>
+
+<dd>
+Sets the maximum size of the permanent generation (where classes etc. are
+stored). This can be useful for application servers using many EJBs and
+JSPs.&nbsp;</dd>
+
+<dl>Example:&nbsp;
+<br><tt>-XX:MaxPermSize=64m</tt>
+<br>See <tt><a href="#sun.PermSize">-XX:PermSize</a></tt>
+<br>Supported by: 1.3, 1.4, 1.5, 6.0</dl>
+</dl>
+
+<h3>
+Choosing and Configuring a Collector</h3>
+
+<dl>
+<dt>
+<a NAME="sun.MaxGCPauseMillis"></a><b><font color="#3333FF">-XX:MaxGCPauseMillis=&lt;ms></font></b></dt>
+
+<dd>
+Instructs the VM to try to keep garbage collection pauses shorter than
+the specified value in ms.&nbsp;</dd>
+
+<dl>This option applies in conjunction with <tt><a href="#sun.UseParallelGC">-XX:+UseParallelGC</a></tt>
+and has higher priority than <tt><a href="#sun.GCTimeRatio">-XX:GCTimeRatio</a></tt>.&nbsp;
+<br>Example:&nbsp;
+<br><tt>-XX:MaxGCPauseMillis=10</tt>
+<br>Supported by: 5.0, 6.0</dl>
+
+<dt>
+<a NAME="sun.GCTimeRatio"></a><b><font color="#3333FF">-XX:GCTimeRatio=&lt;ratio></font></b></dt>
+
+<dd>
+Sets a throughput goal for the VM. The ratio of garbage collection time
+to application time is <tt>1/(1+&lt;ratio>)</tt>.&nbsp;</dd>
+
+<dl>This option applies in conjunction with <tt><a href="#sun.UseParallelGC">-XX:+UseParallelGC</a></tt>
+and has lower priority than <tt><a href="#sun.MaxGCPauseMillis">-XX:MaxGCPauseMillis</a></tt>.&nbsp;
+<br>Example:&nbsp;
+<br><tt>-XX:GCTimeRatio=19&nbsp;</tt>
+<br>sets a goal of 5% of the total time for garbage collection.
+<br>Supported by: 5.0, 6.0</dl>
+
+<dt>
+<a NAME="sun.UseAdaptiveSizePolicy"></a><b><font color="#3333FF">-XX:+UseAdaptiveSizePolicy</font></b></dt>
+
+<dd>
+Instructs the VM to keep track of some statistics and resize both the young
+and the old (tenured) generation based on the collected data.&nbsp;</dd>
+
+<dl>This feature is on by default when the option <tt><a href="#sun.UseParallelGC">-XX:+UseParallelGC</a></tt>
+is used.&nbsp;
+<br>Supported by: 1.4.1, 1.5, 6.0&nbsp;</dl>
+
+<dt>
+<a NAME="sun.AggressiveHeap"></a><b><font color="#3333FF">-XX:+AggressiveHeap</font></b></dt>
+
+<dd>
+Instructs the JVM to push memory use to the limit. It inspects the machine
+resources (size of memory and number of processors) and attempts to set
+various parameters to be optimal for long-running, memory allocation-intensive
+jobs. This option is recommended for dedicated server machines.&nbsp;</dd>
+
+<dl>The physical memory on the machines must be at least 256MB before AggressiveHeap
+can be used.&nbsp;
+<br>Beginning with JVM 1.3.1_02 some GC activity is done in parallel.&nbsp;
+<br>Beginning with JVM 1.4 this option implies <tt><a href="#sun.UseParallelGC">-XX:+UseParallelGC</a></tt>
+and <tt><a href="#sun.UseAdaptiveSizePolicy">-XX:+UseAdaptiveSizePolicy</a></tt>.&nbsp;
+<br>Supported by: 1.3, 1.4, 1.5&nbsp;</dl>
+</dl>
+
+<h4>
+Concurrent Mark-and-Sweep Old Generation Garbage Collection</h4>
+
+<dl>
+<dt>
+<a NAME="sun.UseConcMarkSweepGC"></a><b><font color="#3333FF">-XX:+UseConcMarkSweepGC</font></b></dt>
+
+<dd>
+Use concurrent garbage collection. This collector is also referred to as
+the <i>concurrent</i> low pause collector. It collects garbage in the old
+(tenured) generation concurrently to executing the application.&nbsp;</dd>
+
+<dl>Note that this option can not be used in conjunction with <tt><a href="#sun.UseParallelGC">-XX:+UseParallelGC</a></tt>.
+Instead you may combine it with <tt><a href="#sun.UseParNewGC">-XX:+UseParNewGC</a></tt>
+<br>Since 5.0 this option is the default option, if the machine is a <a href="#sun.serverclass">server-class
+machine</a>; since 6.0 this option is the default on a <a href="#sun.serverclass">server-class
+machine</a>, if a pause goal less than 1.000 msec is specified, e.g. <tt><a href="#sun.MaxGCPauseMillis">-XX:MaxGCPauseMillis=999</a></tt>
+.
+<br>Supported by: 1.4.1, 1.5, 6.0&nbsp;</dl>
+<b><font color="#3333FF">-XX:CMSInitiatingOccupancyFraction=&lt;percent></font></b>
+<dl>Sets the threshold percentage of the used heap in the old generation
+at which the CMS collection takes place. For example, if set to 60, the
+CMS collector will be initiated every time the old generation becomes 60%
+full. By default, this threshold is calculated at run time, and the CMS
+collector might be triggered only when the old generation heap is about
+80-90% full.&nbsp;
+<br>Tuning this value can improve performance in many cases. Since the
+CMS collector does not suspend the mutators as it sweeps and frees memory,
+setting this switch can ensure that enough free memory is available for
+object promotion from the young generation as more data is allocated by
+the application. Sometimes, if this switch is not tuned, CMS collection
+might not be able to keep up and may fail, eventually triggering the default
+stop-the-world mark-compact collector.&nbsp;
+<br>Supported by: 1.4.1, 1.5, 6.0</dl>
+<a NAME="CMSIncrementalMode"></a><b><font color="#3333FF">-XX:+CMSIncrementalMode</font></b>
+<dl>Instructs the CMS collector to run in incremetal mode.
+<br>Supported by: 1.4.2, 1.5, 6.0&nbsp;</dl>
+
+<dt>
+<a NAME="sun.CMSParallelRemarkEnabled"></a><b><font color="#3333FF">-XX:+CMSParallelRemarkEnabled</font></b></dt>
+
+<dd>
+Instructs the CMS collector to perform remarking with multiple threads.
+If the <tt><a href="#sun.UseParNewGC">-XX:+UseParNewGC</a></tt> option
+is in use the remark pauses may be decreased with the <tt><a href="#sun.CMSParallelRemarkEnabled">-XX:+CMSParallelRemarkEnabled</a></tt>option.
+Switched on by default since 5.0.&nbsp; The number of threads used for
+parallel remarking is determined via <tt><font color="#3333FF"><a href="#sun.ParallelGCThreads">-XX:ParallelGCThreads</a></font></tt>.</dd>
+
+<dl>Supported by: 1.4.1, 1.5, 6.0&nbsp;</dl>
+
+<dt>
+<b><font color="#3333FF">–XX:CMSMaxAbortablePrecleanTime=&lt;millis></font></b>&nbsp;</dt>
+
+<dl>Set time limit for the duration of the iterative preclean phase. As
+a rule of thumb the time limit should be larger than interval between young
+GCs. The default is 5000 msec.
+<br>Example:&nbsp;
+<br><tt>-XX:<font color="#000000">CMSMaxAbortablePrecleanTime</font>=6000</tt>
+<br>Supported by: 6.0</dl>
+<a NAME="CMSConcurrentMTEnabled"></a><b><font color="#3333FF">–XX:+CMSConcurrentMTEnabled&nbsp;</font></b>
+<dl>Instructs the CMS collector to perform the concurrent marking with
+multiple threads. The number of threads used for parallel concurrent marking
+is determined via <tt><font color="#3333FF"><a href="#ParallelCMSThreads">-XX:ParallelCMSThreads</a></font></tt>.
+<br>Supported by: 6.0</dl>
+<a NAME="ParallelCMSThreads"></a><b><font color="#3333FF">-XX:ParallelCMSThreads=&lt;n></font></b>
+<dd>
+Specifies the number of threads used to perform the concurrent marking
+when
+<tt><a href="#CMSConcurrentMTEnabled">-XX:+<font color="#3333FF">CMSConcurrentMTEnabled</font></a></tt>
+is set. By default ~ 1/4 of the threads specified via <tt><font color="#3333FF"><a href="#sun.ParallelGCThreads">-XX:ParallelGCThreads</a></font></tt>
+is used.</dd>
+
+<dl>Example:&nbsp;
+<br><tt>-XX:ParallelCMSThreads=1</tt>
+<br>Supported by: 6.0</dl>
+<a NAME="PermGenSweepingEnabled"></a><b><font color="#3333FF">-XX:+PermGenSweepingEnabled</font></b>
+<dl>Enables garbage collection on the permanent generation when CMS&nbsp;
+(see <tt><a href="#sun.UseConcMarkSweepGC">-XX:+UseConcMarkSweepGC</a></tt>
+) is used. Without this option garbage collection on the permanent generation
+is only performed during a (serial) full garbage. Since 6.0 update 4 this
+option is switched on by default if <tt><font color="#3333FF"><a href="#CMSClassUnloadingEnabled">-XX:+CMSClassUnloadingEnabled</a></font></tt><font color="#000000">is
+specified.</font>
+<br>Supported by: 5.0, 6.0</dl>
+<a NAME="CMSClassUnloadingEnabled"></a><b><font color="#3333FF">-XX:+CMSClassUnloadingEnabled</font></b>
+<dl>Enables unloading of classes from the permanent generation when CMS&nbsp;
+(see <tt><a href="#sun.UseConcMarkSweepGC">-XX:+UseConcMarkSweepGC</a></tt>
+) is used. Without this option classes will not be unloaded unless a full
+garbage collection happens.&nbsp;
+<br>Supported by: 5.0, 6.0</dl>
+</dl>
+
+<h4>
+Young Generation Garbage Collection</h4>
+
+<dl>
+<dt>
+<b><font color="#3333FF">-XX:InitialTenuringThreshold=&lt;threshold></font></b></dt>
+
+<dd>
+Initial value for tenuring threshold. Determines the age at which young
+object are promoted to the old generation.</dd>
+
+<dd>
+Default: 7. If CMS (see <tt><a href="#sun.UseConcMarkSweepGC">-XX:+UseConcMarkSweepGC</a></tt>
+) is used the default is: 0.</dd>
+
+<dl>Example:&nbsp;
+<br><tt>-XX:InitialTenuringThreshold=8&nbsp;</tt>
+<dt>
+Supported by: 1.4, 1.5, 6.0</dt>
+</dl>
+
+<dt>
+<b><font color="#3333FF">-XX:MaxTenuringThreshold=&lt;threshold></font></b></dt>
+
+<dd>
+Maximum value for tenuring threshold. Determines the age at which young
+object are promoted to the old generation.&nbsp;</dd>
+
+<br>Default: 15. Until 1.5 update 6 the default used to be: 31.&nbsp; If
+CMS (see <tt><a href="#sun.UseConcMarkSweepGC">-XX:+UseConcMarkSweepGC</a></tt>
+) is used the default is: 4.
+<dl>Example:&nbsp;
+<br><tt>-XX:MaxTenuringThreshold=10</tt>
+<dt>
+Supported by: 1.3, 1.4, 1.5, 6.0</dt>
+</dl>
+
+<dt>
+<b><font color="#3333FF">-XX:+AlwaysTenure</font></b></dt>
+
+<dd>
+Promote young objects immediately; never keep objects in the survivor spaces.</dd>
+
+<dl>
+<dt>
+Supported by: 1.4.2, 1.5, 6.0</dt>
+</dl>
+
+<dt>
+<b><font color="#3333FF">-XX:+NeverTenure</font></b></dt>
+
+<dd>
+Never promote young objects immediately; always keep objects in the survivor
+spaces.</dd>
+
+<dl>
+<dt>
+Supported by: 1.4.2, 1.5, 6.0</dt>
+</dl>
+
+<dt>
+<b><font color="#3333FF">-XX:TargetSurvivorRatio=&lt;percent></font></b></dt>
+
+<dd>
+Determines how much of&nbsp; the survivor space should be filled after
+a young generation garbage collection. TargetSurvivorRatio usually does
+not make a big difference.</dd>
+
+<dl>Example:&nbsp;
+<br><tt>-XX:TargetSurvivorRatio=50</tt>
+<dt>
+Supported by: 1.3, 1.4, 1.5, 6.0</dt>
+</dl>
+</dl>
+
+<h4>
+Parallel Garbage Collection (Young and Old Generation)</h4>
+
+<dl>
+<dt>
+<a NAME="sun.UseParNewGC"></a><b><font color="#3333FF">-XX:+UseParNewGC</font></b></dt>
+
+<dd>
+Instructs the VM to use a parallel collector for the young generation.
+This option should be used in conjunction with <tt><a href="#sun.UseConcMarkSweepGC">-XX:+UseConcMarkSweepGC</a></tt>.&nbsp;</dd>
+
+<dl>
+<dt>
+Supported by: 1.4.1, 1.5, 6.0&nbsp;</dt>
+</dl>
+
+<dt>
+<a NAME="sun.UseParallelGC"></a><b><font color="#3333FF">-XX:+UseParallelGC</font></b></dt>
+
+<dd>
+Use parallel garbage collection. This collector is also referred to as
+the <i>throughput</i> collector. It uses a parallel version of the young
+generation collector. The old (tenured) generation is still cleaned with
+the default collector. The number of threads used for parallel GC is determined
+via <tt><font color="#3333FF"><a href="#sun.ParallelGCThreads">-XX:ParallelGCThreads</a></font></tt>.</dd>
+
+<dl>Since 1.5 this option is the default option, if the machine is a <a href="#sun.serverclass">server-class
+machine</a>.&nbsp;
+<br>This option can not be used in conjunction with <tt><a href="#sun.UseConcMarkSweepGC">-XX:+UseConcMarkSweepGC</a></tt>.&nbsp;
+<br>Supported by: 1.4.1, 1.5, 6.0&nbsp;</dl>
+
+<dt>
+<a NAME="sun.ParallelGCThreads"></a><b><font color="#3333FF">-XX:ParallelGCThreads=&lt;number></font></b></dt>
+
+<dd>
+This switch sets the number of parallel GC threads that the JVM must run
+for performing garbage collection in the young generation when
+<tt><a href="#sun.UseParallelGC">-XX:+UseParallelGC</a></tt>
+is set. By default a system with N CPUs uses N garbage collection threads.&nbsp;</dd>
+
+<dd>
+It has been observed that tweaking this number may improve performance
+in some cases. An example might be that of multiple instances of JVM running
+on a single multi-CPU system. In this case, the number of parallel GC threads
+for each JVM may need to be set to less than the number of CPUs by using
+this switch.</dd>
+
+<dl>Example:&nbsp;
+<br><tt>-XX:ParallelGCThreads=4</tt>
+<br>Supported by: 1.4.1, 1.5, 6.0</dl>
+<b><font color="#3333FF">-XX:-UseParallelOldGC</font></b>
+<dl>Use parallel mark-and-compact garbage collection for the full collections.
+Enabling this option automatically sets <a href="#UseParallelGC">-XX:+UseParallelGC</a>.&nbsp;
+<br>Under 6.0 this option is the default option, if the machine is a <a href="#sun.serverclass">server-class
+machine</a>.&nbsp;
+<br>Supported by: 5.0 (since update 6), 6.0</dl>
+
+<h4>
+Serial Garbage Collection on Old Generation)</h4>
+<b><font color="#3333FF">-XX:-UseSerialGC</font></b>
+<dl>Use serial mark-and-compact garbage collection for the full collections..&nbsp;
+<br>Supported by: 5.0, 6.0</dl>
+<a NAME="sun.UseTrainGC"></a><b><font color="#3333FF">-XX:+UseTrainGC</font></b>
+<dd>
+Activates the train garbage collector. Note that development for this collector
+has been stopped since 1.4.2.&nbsp;</dd>
+
+<dl>See <tt><a href="#sun.incgc">-Xincgc</a></tt>
+<br>Supported by: 1.3, 1.4, 1.5; discontinued in 6.0&nbsp;</dl>
+
+<dt>
+<a NAME="sun.incgc"></a><b><font color="#3333FF">-Xincgc</font></b></dt>
+
+<dd>
+Activates the incremental (also called train) garbage collector.&nbsp;</dd>
+
+<dl>See <tt><a href="#sun.UseTrainGC">-XX:+UseTrainGC</a></tt>
+<br>Supported by: 1.3, 1.4, 1.5; discontinued in 6.0, i.e. in 6.0 it has
+the same meaning as <tt><font color="#3333FF"><a href="#CMSIncrementalMode">-XX:+CMSIncrementalMode</a></font></tt>&nbsp;</dl>
+</dl>
+
+<h4>
+Garbage First (G1) Garbage Collection</h4>
+
+<dl><b><font color="#3333FF">-XX:+UnlockExperimentalVMOptions&nbsp;</font></b>
+<dl><font color="#000000">Enable experiments.</font></dl>
+<a NAME="UseG1GC"></a><b><font color="#3333FF">-XX:+UseG1GC&nbsp;</font></b>
+<dl>Instructs the VM to use the garbage-first collector.
+<br>Supported by: 6.0 (update 14)</dl>
+<a NAME="MaxGCPauseMillis"></a><b><font color="#3333FF">-XX:GCPauseIntervalMillis</font></b>
+<dl><font color="#000000">Set the maximum GC pause time goal in milliseconds
+that G1 will attempt to meet if </font><tt><font color="#3333FF"><a href="#UseG1GC">-XX:+UseG1GC</a></font></tt><font color="#000000">
+is set.&nbsp;</font>
+<br>Supported by: 6.0 (update 14)</dl>
+<b><font color="#3333FF">-XX:MaxGCPauseMillis=&lt;mx></font></b>
+<dl><font color="#000000">Set the time interval over which GC pauses totaling
+up to <tt><a href="#MaxGCPauseMillis">MaxGCPauseMillis</a></tt> may take
+place if </font><tt><font color="#3333FF"><a href="#UseG1GC">-XX:+UseG1GC</a></font></tt><font color="#000000">
+is set.&nbsp;</font>
+<br>Supported by: 6.0 (update 14)</dl>
+</dl>
+
+<h3>
+Miscellaneous Settings</h3>
+
+<dl>
+<dt>
+<a NAME="sun.ss"></a><b><font color="#3333FF">-Xss&lt;value></font></b></dt>
+
+<dd>
+Sets the size of the stack. In a server system with many threads lowering
+the stack size may be advantageous to reduce footprint. If the stack is
+too small, you will start seeing <tt>StackOverflowError</tt>s.&nbsp;</dd>
+
+<dl>You may use <tt>k</tt>, <tt>m</tt> and <tt>g</tt> for kilobyte, megabyte
+and gigabyte.&nbsp;
+<br>Example:&nbsp;
+<br><tt>-Xss128k</tt>
+<br>sets the stack size to 128kb
+<br>Supported by: 1.3, 1.4, 1.5, 6.0</dl>
+</dl>
+
+<dl>
+<dt>
+<a NAME="sun.DisableExplicitGC"></a>-<b><font color="#3333FF">XX:+DisableExplicitGC</font></b></dt>
+
+<dl>Disables calls to <tt>java.lang.System.gc()</tt>.</dl>
+<b><font color="#3333FF">-XX:+ExplicitGCInvokesConcurrent&nbsp;</font></b>
+<dl><font color="#000000">Instructs the VM to use concurrent GC in response
+to invocation of </font><tt>java.lang.System.gc()</tt><font color="#000000">
+instead of invoking the stop-the-world serial garbage collector.</font>
+<br><font color="#000000">Only applies when the CMS collector is used (<a href="#sun.UseConcMarkSweepGC">-<tt>XX:+UseConcMarkSweepGC</tt></a>).</font>
+<br>Supported by: 6.0</dl>
+<b><font color="#3333FF">-XX:+ScavengeBeforeFullGC</font></b>
+<dl>
+<dt>
+Do young generation GC prior to a full GC.&nbsp;</dt>
+
+<dt>
+Supported by: 1.4.1, 5.0, 6.0</dt>
+</dl>
+
+<dt>
+<a NAME="sun.SoftRefLRUPolicyMSPerMB"></a><b><font color="#3333FF">-XX:SoftRefLRUPolicyMSPerMB=&lt;ms
+per mb></font></b></dt>
+
+<dd>
+Sets the rate at which the VM clears soft references. The rate is expressed
+in ms per free mb of heap. For the server VM free heap means <i>potentially</i>
+free heap using the maximum heap size as set with <tt><a href="#sun.mx">-Xmx</a></tt>
+in the calculation. For the client VM the free heap is calculated using
+the actual current heap size.&nbsp;</dd>
+
+<dl>Example:&nbsp;
+<br><tt>-XX:SoftRefLRUPolicyMSPerMB=1000</tt>
+<br>instructs the VM to allow softly reachable objects to remain alive
+for 1s per free mb
+<br>Supported by: 1.3.1, 1.4, 1.5, 6.0</dl>
+</dl>
+
+<h3>
+<a NAME="sun.serverclass"></a>Server-Class Machine</h3>
+Java 5.0 (1.5) defines a class of machines referred to as server-class
+machines. These are machines that have 2 or more physical processors and
+2 or more gb of physical memory. On server-class machines the Sun JVM starts
+with altered default settings. These are:&nbsp;
+<p><tt>-server -XX:+UseParallelGC</tt>
+<p>Additionally the initial heap size (<tt><a href="#sun.ms">-Xms</a></tt>)
+is set to 1/64 of the physical memory, up to 1gb. The maximum heap size
+(<tt><a href="#sun.mx">-Xmx</a></tt>) is set to 1/4 of the physical memory,
+up to 1gb.&nbsp;
+<p>Note that on server-class 32bit-Windows systems the VM will nevertheless
+start with the classic client settings, as most 32bit-Windows Java applications
+are not server applications.&nbsp;</td>
+
+<td ROWSPAN="2">
+<table CELLSPACING=0 CELLPADDING=0 HEIGHT="100%" >
+<tr VALIGN=TOP>
+<td></td>
+</tr>
+</table>
+</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td></td>
+</tr>
+</table>
+
+</body>
+<!-- ZoneLabs Popup Blocking Insertion -->
+<script language='javascript'>postamble();</script>
+</html>
