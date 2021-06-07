@@ -3,6 +3,8 @@
 
 [Vorlesungsfolien](w12_nio.pdf)
 
+[Skript](script_nio.pdf)
+
 ## Übung
 
 Der Ordner `code` enthält einige Beispielprogramme die Ihnen die Funktionsweise der nio-Klassen verdeutlichen helfen. Darunter sind auch die im Skript erwähnten `CopyFile.java` Programm.

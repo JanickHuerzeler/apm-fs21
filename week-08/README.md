@@ -5,6 +5,8 @@
 
 [Vorlesungsfolien](w08_gc_algorithmen.pdf)
 
+[Skript](script_gc.pdf)
+
 ## Übungen
 
 ### Reference Counting
